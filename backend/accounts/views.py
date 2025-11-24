@@ -167,7 +167,7 @@ class VerifyMFAView(APIView):
             try:
                 payload = jwt.decode(token, settings.JWT_SECRET_KEY, algorithms=[settings.JWT_ALGORITHM])
                 user = User.objects.get(id=payload['user_id'])
-            except:
+            except Exception:
                 return Response({'error': 'Invalid token'}, status=401)
             
             if user.verify_mfa_token(mfa_token):
