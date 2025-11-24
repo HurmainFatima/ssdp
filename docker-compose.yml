@@ -1,0 +1,73 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:15-alpine
+    container_name: secure_file_db
+    environment:
+      POSTGRES_DB: secure_file_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres123
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - secure_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: secure_file_backend
+    command: >
+      sh -c "python manage.py migrate &&
+             python manage.py runserver 0.0.0.0:8000"
+    environment:
+      - DEBUG=True
+      - DJANGO_SECRET_KEY=dev-secret-key-change-in-production
+      - DB_NAME=secure_file_db
+      - DB_USER=postgres
+      - DB_PASSWORD=postgres123
+      - DB_HOST=db
+      - DB_PORT=5432
+      - JWT_SECRET_KEY=jwt-secret-key-change-in-production
+    volumes:
+      - ./backend:/app
+      - ./logs:/app/logs
+    ports:
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - secure_network
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: secure_file_frontend
+    environment:
+      - REACT_APP_API_URL=http://localhost:8000/api
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    depends_on:
+      - backend
+    networks:
+      - secure_network
+
+volumes:
+  postgres_data:
+
+networks:
+  secure_network:
+    driver: bridge
