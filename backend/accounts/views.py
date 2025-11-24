@@ -208,7 +208,7 @@ class DisableMFAView(APIView):
                 return Response({'error': 'Invalid password'}, status=401)
             
             user.mfa_enabled = False
-            user.mfa_secret = ''
+            user.mfa_secret = None
             user.save()
             
             return Response({
