@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import api from '../services/client';
 import { FileEncryption } from '../services/encryption';
 
 const SharedFiles = () => {
@@ -17,22 +17,25 @@ const SharedFiles = () => {
     loadSharedFiles();
   }, []);
 
-  const loadSharedFiles = async () => {
-    try {
-      setLoading(true);
-      const token = localStorage.getItem('accessToken');
-      const response = await axios.get('http://localhost:8000/api/files/shared-with-me/', {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      setSharedFiles(response.data.shared_files || []);
-      setError('');
-    } catch (err) {
-      setError('Failed to load shared files');
-      console.error(err);
-    } finally {
-      setLoading(false);
-    }
-  };
+ const loadSharedFiles = async () => {
+  try {
+    setLoading(true);
+    const token = localStorage.getItem('accessToken');
+
+    const response = await api.get("files/shared-with-me/", {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+
+    setSharedFiles(response.data.shared_files || []);
+    setError('');
+  } catch (err) {
+    setError('Failed to load shared files');
+    console.error(err);
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   const handleDownloadClick = (file) => {
     setSelectedFile(file);
