@@ -1,7 +1,6 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.parsers import JSONParser
-from django.http import HttpResponse
 from .models import EncryptedFile
 from accounts.models import User
 import uuid
