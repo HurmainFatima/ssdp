@@ -58,7 +58,7 @@ class User(AbstractUser):
                 raw_password.encode('utf-8'),
                 self.password.encode('utf-8')
             )
-        except:
+        except Exception as e:
             return False
     
     def generate_mfa_secret(self):
