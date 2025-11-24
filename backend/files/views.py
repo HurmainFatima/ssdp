@@ -11,7 +11,6 @@ import jwt
 from accounts.models import User
 from .models import FileShare
 from audit.models import AuditLog
-from accounts.models import User
 
 
 def get_authenticated_user(request):
