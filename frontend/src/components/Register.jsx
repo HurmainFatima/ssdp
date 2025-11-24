@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import api from '../services/client'; // use the same api client as FileList
 
 const Register = () => {
   const [formData, setFormData] = useState({
@@ -14,10 +14,7 @@ const Register = () => {
   const navigate = useNavigate();
 
   const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    });
+    setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
   const handleSubmit = async (e) => {
@@ -37,16 +34,18 @@ const Register = () => {
     setLoading(true);
 
     try {
-      await axios.post('http://localhost:8000/api/auth/register/', {
+      // Use api client instead of axios directly
+      await api.post('auth/register/', {
         username: formData.username,
         email: formData.email,
         password: formData.password,
       });
 
-      alert('Registration successful! Please login.');
+      alert('✅ Registration successful! Please login.');
       navigate('/login');
     } catch (err) {
       setError(err.response?.data?.error || 'Registration failed. Please try again.');
+      console.error('Registration error:', err);
     } finally {
       setLoading(false);
     }
@@ -68,9 +67,7 @@ const Register = () => {
           )}
 
           <div style={{ marginBottom: '16px' }}>
-            <label style={{ display: 'block', fontSize: '14px', fontWeight: '500', color: '#374151', marginBottom: '8px' }}>
-              Username
-            </label>
+            <label style={{ display: 'block', fontSize: '14px', fontWeight: '500', color: '#374151', marginBottom: '8px' }}>Username</label>
             <input
               type="text"
               name="username"
@@ -82,9 +79,7 @@ const Register = () => {
           </div>
 
           <div style={{ marginBottom: '16px' }}>
-            <label style={{ display: 'block', fontSize: '14px', fontWeight: '500', color: '#374151', marginBottom: '8px' }}>
-              Email
-            </label>
+            <label style={{ display: 'block', fontSize: '14px', fontWeight: '500', color: '#374151', marginBottom: '8px' }}>Email</label>
             <input
               type="email"
               name="email"
@@ -96,9 +91,7 @@ const Register = () => {
           </div>
 
           <div style={{ marginBottom: '16px' }}>
-            <label style={{ display: 'block', fontSize: '14px', fontWeight: '500', color: '#374151', marginBottom: '8px' }}>
-              Password (min. 12 characters)
-            </label>
+            <label style={{ display: 'block', fontSize: '14px', fontWeight: '500', color: '#374151', marginBottom: '8px' }}>Password (min. 12 characters)</label>
             <input
               type="password"
               name="password"
@@ -110,9 +103,7 @@ const Register = () => {
           </div>
 
           <div style={{ marginBottom: '24px' }}>
-            <label style={{ display: 'block', fontSize: '14px', fontWeight: '500', color: '#374151', marginBottom: '8px' }}>
-              Confirm Password
-            </label>
+            <label style={{ display: 'block', fontSize: '14px', fontWeight: '500', color: '#374151', marginBottom: '8px' }}>Confirm Password</label>
             <input
               type="password"
               name="confirmPassword"
@@ -133,9 +124,7 @@ const Register = () => {
         </form>
 
         <div style={{ marginTop: '24px', textAlign: 'center' }}>
-          <a href="/login" style={{ color: '#4F46E5', fontWeight: '500', textDecoration: 'none' }}>
-            Already have an account? Login
-          </a>
+          <a href="/login" style={{ color: '#4F46E5', fontWeight: '500', textDecoration: 'none' }}>Already have an account? Login</a>
         </div>
       </div>
     </div>
