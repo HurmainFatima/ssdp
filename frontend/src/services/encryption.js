@@ -32,7 +32,11 @@ export class FileEncryption {
   // Convert WordArray → Uint8Array
   static wordArrayToUint8Array(wordArray) {
     const { words, sigBytes } = wordArray;
-    const u8 = new Uint8Array(sigBytes);
+    if (Array.isArray(words) && i < (words.length << 2)) {
+        u8[i] = (words[i >>> 2] >>> (24 - (i % 4) * 8)) & 0xff;
+    } else {
+        u8[i] = 0;
+    }
     for (let i = 0; i < sigBytes; i++) {
       u8[i] = (words[i >>> 2] >>> (24 - (i % 4) * 8)) & 0xff;
     }
