@@ -107,7 +107,7 @@ class LoginView(APIView):
                 }
             }, status=200)
         
-        except Exception as e:
+        except Exception:
             return Response({'error': 'Login failed'}, status=500)
 
 
