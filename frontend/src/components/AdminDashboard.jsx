@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import api from '../services/client';
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
@@ -29,20 +29,17 @@ const AdminDashboard = () => {
     try {
       setLoading(true);
       const token = localStorage.getItem('accessToken');
-      
+
       const [usersResponse, statsResponse] = await Promise.all([
-        axios.get('http://localhost:8000/api/auth/admin/users/', {
-          headers: { Authorization: `Bearer ${token}` }
-        }),
-        axios.get('http://localhost:8000/api/audit/stats/', {
-          headers: { Authorization: `Bearer ${token}` }
-        })
+        api.get('auth/admin/users/', { headers: { Authorization: `Bearer ${token}` } }),
+        api.get('audit/stats/', { headers: { Authorization: `Bearer ${token}` } }),
       ]);
-      
+
       setUsers(usersResponse.data.users || []);
-      setAuditStats(statsResponse.data);
+      setAuditStats(statsResponse.data || {});
       setError('');
     } catch (err) {
+      console.error('Admin data load error:', err);
       setError('Failed to load admin data: ' + (err.response?.data?.error || err.message));
       if (err.response?.status === 403) {
         navigate('/dashboard');
@@ -60,18 +57,19 @@ const AdminDashboard = () => {
 
     try {
       const token = localStorage.getItem('accessToken');
-      await axios.post(
-        `http://localhost:8000/api/auth/admin/users/${selectedUser.id}/role/`,
+      await api.post(
+        `auth/admin/users/${selectedUser.id}/role/`,
         { role: newRole },
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      
+
       alert('✅ User role updated successfully');
       setShowRoleModal(false);
       setSelectedUser(null);
       setNewRole('');
       loadData();
     } catch (err) {
+      console.error('Role update error:', err);
       alert('Failed to update role: ' + (err.response?.data?.error || err.message));
     }
   };
@@ -84,15 +82,16 @@ const AdminDashboard = () => {
 
     try {
       const token = localStorage.getItem('accessToken');
-      await axios.post(
-        `http://localhost:8000/api/auth/admin/users/${user.id}/toggle/`,
+      await api.post(
+        `auth/admin/users/${user.id}/toggle/`,
         {},
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      
+
       alert(`✅ User ${action}d successfully`);
       loadData();
     } catch (err) {
+      console.error('Toggle status error:', err);
       alert(`Failed to ${action} user: ` + (err.response?.data?.error || err.message));
     }
   };
