@@ -4,7 +4,6 @@ from .models import User, Role
 import jwt
 from django.conf import settings
 from datetime import datetime, timedelta
-import pyotp
 import qrcode
 import io
 import base64
