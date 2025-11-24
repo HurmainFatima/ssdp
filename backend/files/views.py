@@ -8,7 +8,6 @@ import os
 import base64
 from django.conf import settings
 import jwt
-from accounts.models import User
 from .models import FileShare
 from audit.models import AuditLog
 
