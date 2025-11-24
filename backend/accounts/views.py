@@ -39,7 +39,7 @@ class RegisterView(APIView):
             
             return Response({'message': 'User registered successfully'}, status=201)
         
-        except Exception as e:
+        except Exception:
             return Response({'error': 'Registration failed'}, status=500)
 
 
