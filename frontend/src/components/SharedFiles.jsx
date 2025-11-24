@@ -90,7 +90,8 @@ const SharedFiles = () => {
         'doc': 'application/msword',
         'docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
       };
-      const mimeType = mimeTypes[fileExtension] || 'application/octet-stream';
+      const safeExtension = typeof fileExtension === 'string' ? fileExtension.toLowerCase() : '';
+      const mimeType = mimeTypes[safeExtension] || 'application/octet-stream';
       
       const blob = new Blob([decryptedData], { type: mimeType });
       
