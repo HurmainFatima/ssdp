@@ -1,6 +1,6 @@
 /* eslint-disable no-undef */
 import React, { useState } from 'react';
-import axios from 'axios';
+import api from "../api/client";
 import { FileEncryption } from '../services/encryption';
 
 const FileUpload = ({ onUploadSuccess }) => {
@@ -54,22 +54,16 @@ const FileUpload = ({ onUploadSuccess }) => {
     setStatus('Uploading encrypted file...');
 
     // Upload to server with authentication
-    const response = await axios.post(
-      'http://localhost:8000/api/files/upload/', 
-      {
-        encrypted_data: encryptedData.encryptedData,
-        encryption_metadata: {
-          iv: encryptedData.iv,
-          salt: encryptedData.salt,
-        },
-        original_filename: encryptedData.originalName,
-        file_size: encryptedData.size,
-        file_hash: encryptedData.hash,
-      },
-      {
-        headers: { Authorization: `Bearer ${token}` }
-      }
-    );
+    const response = await api.post("files/upload/", {
+  encrypted_data: encryptedData.encryptedData,
+  encryption_metadata: {
+    iv: encryptedData.iv,
+    salt: encryptedData.salt,
+  },
+  original_filename: encryptedData.originalName,
+  file_size: encryptedData.size,
+  file_hash: encryptedData.hash,
+});
 
     setProgress(100);
     setStatus('✅ File uploaded successfully!');
