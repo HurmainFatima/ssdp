@@ -1,7 +1,7 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.parsers import JSONParser
-from django.http import FileResponse, HttpResponse
+from django.http import HttpResponse
 from .models import EncryptedFile
 from accounts.models import User
 import uuid
@@ -357,7 +357,6 @@ class ShareFileView(APIView):
             if FileShare.objects.filter(file=file, shared_with=recipient).exists():
                 return Response({'error': 'File already shared with this user'}, status=400)
 
-            from django.utils import timezone
             expires_datetime = None
             if expires_at:
                 from datetime import datetime
