@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../services/client';
 import { FileEncryption } from '../services/encryption';
+import axios from 'axios';
 
 const SharedFiles = () => {
   const navigate = useNavigate();
