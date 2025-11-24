@@ -22,7 +22,9 @@ export class FileEncryption {
     const u8 = new Uint8Array(buffer);
     const words = [];
     for (let i = 0; i < u8.length; i++) {
-      words[i >>> 2] |= u8[i] << (24 - (i % 4) * 8);
+      if (Array.isArray(words) && i < u8.length && Number.isInteger(u8[i])) {
+          words[i >>> 2] |= u8[i] << (24 - (i % 4) * 8);
+      }
     }
     return CryptoJS.lib.WordArray.create(words, u8.length);
   }
