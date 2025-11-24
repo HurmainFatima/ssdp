@@ -28,7 +28,8 @@ def get_authenticated_user(request):
         )
         user = User.objects.get(id=payload['user_id'], is_active=True)
         return user
-    except:
+    except Exception as e:
+        print(f"Authentication error: {e}")
         return None
 
 
