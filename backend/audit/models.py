@@ -1,7 +1,5 @@
 from django.db import models
 from accounts.models import User
-import json
-
 class AuditLog(models.Model):
     ACTION_CHOICES = [
         ('USER_REGISTERED', 'User Registered'),
