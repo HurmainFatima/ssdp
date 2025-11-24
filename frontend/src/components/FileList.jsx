@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import api from '../services/client';
 import { FileEncryption } from '../services/encryption';
 
 const FileList = ({ refreshTrigger }) => {
@@ -32,23 +32,18 @@ const FileList = ({ refreshTrigger }) => {
     try {
       console.log('📡 Loading files...');
       setLoading(true);
-
       const token = localStorage.getItem('accessToken');
-      console.log('🔑 Token exists:', !!token);
-
       if (!token) {
         setError('Authentication required. Please login again.');
         setLoading(false);
         return;
       }
 
-      const response = await axios.get('http://localhost:8000/api/files/', {
-        headers: { Authorization: `Bearer ${token}` }
+      const response = await api.get('files/', {
+        headers: { Authorization: `Bearer ${token}` },
       });
 
       console.log('✅ Files loaded:', response.data.files.length, 'files');
-      console.log('📄 Files:', response.data.files);
-
       setFiles(response.data.files || []);
       setError('');
     } catch (err) {
@@ -77,13 +72,11 @@ const FileList = ({ refreshTrigger }) => {
 
     try {
       setDownloadingFile(selectedFile.id);
-
       const token = localStorage.getItem('accessToken');
 
-      const response = await axios.get(
-        `http://localhost:8000/api/files/${selectedFile.id}/download/`,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+      const response = await api.get(`files/${selectedFile.id}/download/`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
 
       const { encrypted_data, original_filename, file_hash, encryption_metadata } = response.data;
 
@@ -117,7 +110,6 @@ const FileList = ({ refreshTrigger }) => {
       const mimeType = mimeTypes[fileExtension] || 'application/octet-stream';
 
       const blob = new Blob([decryptedData], { type: mimeType });
-
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
@@ -151,11 +143,11 @@ const FileList = ({ refreshTrigger }) => {
     try {
       const token = localStorage.getItem('accessToken');
 
-      await axios.delete(`http://localhost:8000/api/files/${fileId}/`, {
-        headers: { Authorization: `Bearer ${token}` }
+      await api.delete(`files/${fileId}/`, {
+        headers: { Authorization: `Bearer ${token}` },
       });
 
-      setFiles(files.filter(f => f.id !== fileId));
+      setFiles(files.filter((f) => f.id !== fileId));
       alert('File deleted successfully');
     } catch (err) {
       if (err.response?.status === 401) {
@@ -187,13 +179,13 @@ const FileList = ({ refreshTrigger }) => {
       setSharingFile(true);
       const token = localStorage.getItem('accessToken');
 
-      await axios.post(
-        `http://localhost:8000/api/files/${selectedFile.id}/share/`,
+      await api.post(
+        `files/${selectedFile.id}/share/`,
         {
           shared_with_email: shareEmail,
           can_download: canDownload,
           can_reshare: canReshare,
-          expires_at: expiresAt || null
+          expires_at: expiresAt || null,
         },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -215,10 +207,9 @@ const FileList = ({ refreshTrigger }) => {
   const handleViewShares = async (file) => {
     try {
       const token = localStorage.getItem('accessToken');
-      const response = await axios.get(
-        `http://localhost:8000/api/files/${file.id}/shares/`,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+      const response = await api.get(`files/${file.id}/shares/`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
 
       setFileShares(response.data.shares || []);
       setSelectedFile(file);
@@ -237,8 +228,8 @@ const FileList = ({ refreshTrigger }) => {
 
     try {
       const token = localStorage.getItem('accessToken');
-      await axios.post(
-        `http://localhost:8000/api/files/${selectedFile.id}/revoke/`,
+      await api.post(
+        `files/${selectedFile.id}/revoke/`,
         { shared_with_email: shareEmail },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -257,7 +248,15 @@ const FileList = ({ refreshTrigger }) => {
 
   if (loading) {
     return (
-      <div style={{ background: 'white', borderRadius: '12px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)', padding: '24px', textAlign: 'center' }}>
+      <div
+        style={{
+          background: 'white',
+          borderRadius: '12px',
+          boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
+          padding: '24px',
+          textAlign: 'center',
+        }}
+      >
         <div style={{ fontSize: '48px', marginBottom: '16px' }}>⏳</div>
         <p style={{ color: '#6B7280' }}>Loading files...</p>
       </div>
@@ -271,7 +270,16 @@ const FileList = ({ refreshTrigger }) => {
       </h2>
 
       {error && (
-        <div style={{ background: '#FEF2F2', border: '1px solid #FEE2E2', color: '#991B1B', padding: '12px', borderRadius: '8px', marginBottom: '16px' }}>
+        <div
+          style={{
+            background: '#FEF2F2',
+            border: '1px solid #FEE2E2',
+            color: '#991B1B',
+            padding: '12px',
+            borderRadius: '8px',
+            marginBottom: '16px',
+          }}
+        >
           {error}
         </div>
       )}
@@ -286,14 +294,14 @@ const FileList = ({ refreshTrigger }) => {
           {files.map((file) => (
             <div
               key={file.id}
-              style={{ 
-                border: '1px solid #E5E7EB', 
-                borderRadius: '8px', 
+              style={{
+                border: '1px solid #E5E7EB',
+                borderRadius: '8px',
                 padding: '16px',
                 transition: 'border-color 0.2s',
               }}
-              onMouseEnter={(e) => e.currentTarget.style.borderColor = '#818CF8'}
-              onMouseLeave={(e) => e.currentTarget.style.borderColor = '#E5E7EB'}
+              onMouseEnter={(e) => (e.currentTarget.style.borderColor = '#818CF8')}
+              onMouseLeave={(e) => (e.currentTarget.style.borderColor = '#E5E7EB')}
             >
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                 <div style={{ flex: 1 }}>
@@ -314,18 +322,18 @@ const FileList = ({ refreshTrigger }) => {
                   <button
                     onClick={() => handleDownloadClick(file)}
                     disabled={downloadingFile === file.id}
-                    style={{ 
-                      padding: '8px 16px', 
-                      background: downloadingFile === file.id ? '#9CA3AF' : '#4F46E5', 
-                      color: 'white', 
-                      border: 'none', 
-                      borderRadius: '6px', 
+                    style={{
+                      padding: '8px 16px',
+                      background: downloadingFile === file.id ? '#9CA3AF' : '#4F46E5',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '6px',
                       cursor: downloadingFile === file.id ? 'not-allowed' : 'pointer',
                       fontWeight: '500',
                       fontSize: '14px',
                       display: 'flex',
                       alignItems: 'center',
-                      gap: '4px'
+                      gap: '4px',
                     }}
                   >
                     <span>{downloadingFile === file.id ? '⏳' : '⬇️'}</span>
@@ -334,15 +342,15 @@ const FileList = ({ refreshTrigger }) => {
 
                   <button
                     onClick={() => handleShareClick(file)}
-                    style={{ 
-                      padding: '8px 16px', 
-                      background: '#10B981', 
-                      color: 'white', 
-                      border: 'none', 
-                      borderRadius: '6px', 
+                    style={{
+                      padding: '8px 16px',
+                      background: '#10B981',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '6px',
                       cursor: 'pointer',
                       fontWeight: '500',
-                      fontSize: '14px'
+                      fontSize: '14px',
                     }}
                   >
                     👥 Share
@@ -350,15 +358,15 @@ const FileList = ({ refreshTrigger }) => {
 
                   <button
                     onClick={() => handleViewShares(file)}
-                    style={{ 
-                      padding: '8px 16px', 
-                      background: '#6B7280', 
-                      color: 'white', 
-                      border: 'none', 
-                      borderRadius: '6px', 
+                    style={{
+                      padding: '8px 16px',
+                      background: '#6B7280',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '6px',
                       cursor: 'pointer',
                       fontWeight: '500',
-                      fontSize: '14px'
+                      fontSize: '14px',
                     }}
                   >
                     👁️ Shares
@@ -366,15 +374,15 @@ const FileList = ({ refreshTrigger }) => {
 
                   <button
                     onClick={() => handleDelete(file.id)}
-                    style={{ 
-                      padding: '8px 16px', 
-                      background: '#EF4444', 
-                      color: 'white', 
-                      border: 'none', 
-                      borderRadius: '6px', 
+                    style={{
+                      padding: '8px 16px',
+                      background: '#EF4444',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '6px',
                       cursor: 'pointer',
                       fontWeight: '500',
-                      fontSize: '14px'
+                      fontSize: '14px',
                     }}
                   >
                     🗑️ Delete
@@ -386,92 +394,6 @@ const FileList = ({ refreshTrigger }) => {
         </div>
       )}
 
-      {/* Password Modal */}
-      {showPasswordModal && (
-        <div style={{ 
-          position: 'fixed', 
-          top: 0, 
-          left: 0, 
-          right: 0, 
-          bottom: 0, 
-          background: 'rgba(0,0,0,0.5)', 
-          display: 'flex', 
-          alignItems: 'center', 
-          justifyContent: 'center',
-          zIndex: 1000
-        }}>
-          <div style={{ 
-            background: 'white', 
-            borderRadius: '12px', 
-            padding: '24px', 
-            maxWidth: '400px', 
-            width: '90%',
-            boxShadow: '0 20px 25px -5px rgba(0,0,0,0.1)'
-          }}>
-            <h3 style={{ fontSize: '20px', fontWeight: 'bold', marginBottom: '16px' }}>
-              🔓 Enter Decryption Password
-            </h3>
-            <p style={{ fontSize: '14px', color: '#6B7280', marginBottom: '16px' }}>
-              Enter the password to decrypt: <strong>{selectedFile?.original_filename}</strong>
-            </p>
-            
-            <input
-              type="password"
-              value={decryptPassword}
-              onChange={(e) => setDecryptPassword(e.target.value)}
-              onKeyPress={(e) => e.key === 'Enter' && handleDownload()}
-              placeholder="Enter decryption password"
-              style={{ 
-                width: '100%', 
-                padding: '12px', 
-                border: '1px solid #D1D5DB', 
-                borderRadius: '8px',
-                marginBottom: '16px',
-                fontSize: '14px'
-              }}
-              autoFocus
-            />
-
-            <div style={{ display: 'flex', gap: '8px' }}>
-              <button
-                onClick={() => {
-                  setShowPasswordModal(false);
-                  setDecryptPassword('');
-                  setSelectedFile(null);
-                }}
-                style={{ 
-                  flex: 1,
-                  padding: '12px', 
-                  background: '#F3F4F6', 
-                  color: '#374151', 
-                  border: 'none', 
-                  borderRadius: '8px', 
-                  cursor: 'pointer',
-                  fontWeight: '500'
-                }}
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleDownload}
-                disabled={!decryptPassword}
-                style={{ 
-                  flex: 1,
-                  padding: '12px', 
-                  background: decryptPassword ? '#4F46E5' : '#9CA3AF', 
-                  color: 'white', 
-                  border: 'none', 
-                  borderRadius: '8px', 
-                  cursor: decryptPassword ? 'pointer' : 'not-allowed',
-                  fontWeight: '500'
-                }}
-              >
-                Decrypt & Download
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* Share Modal */}
       {showShareModal && (
